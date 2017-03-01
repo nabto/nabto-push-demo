@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Push Notification Demo</string>
+    <string name="subOn">Unsubscribe to Push Notifications</string>
+    <string name="subOff">Subscribe to Push Notifications</string>
+    <string name="noAppID">Please type your OneSignal app ID</string>
+    <string name="noDev">Please select a local device</string>
+    <string name="noDevSpinner">No devices available</string>
+
+    <string-array name="noDevList">
+        <item>No devices available</item>
+    </string-array>
+
+</resources>
