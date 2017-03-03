@@ -1,0 +1,17 @@
+#ifndef _DEMO_APPLICATION_H
+#define _DEMO_APPLICATION_H
+
+#define STATIC_DATA_BUFFER_LENGTH 256
+#include <stdint.h>
+#include <unabto/unabto_protocol_defines.h>
+
+struct pushSubscriber {
+    char staticData[STATIC_DATA_BUFFER_LENGTH];
+    uint8_t fingerprint[NP_TRUNCATED_SHA256_LENGTH_BYTES];
+};
+
+void demo_application_set_device_name(const char* name);
+void demo_application_tick();
+void demo_init();
+
+#endif

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<unabto_queries
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.nabto.com/unabto/query_model.xsd">
+    <!-- push demo queries -->
+
+    <!-- Subscribe to push notifications -->
+    <query name="push_subscribe.json" id="20000">
+        <request>
+            <parameter name="staticData" type="raw"/>
+        </request>
+        <response format="json">
+            <parameter name="status" type="uint8"/>
+        </response>
+    </query>
+
+    <!-- Unsubscribe to push notifications -->
+    <query name="push_unsubscribe.json" id="20010">
+        <request>
+        </request>
+        <response format="json">
+            <parameter name="status" type="uint8"/>
+        </response>
+    </query>
+    <!-- Unsubscribe to push notifications -->
+    <query name="push_trigger.json" id="20020">
+        <request>
+        </request>
+        <response format="json">
+        </response>
+    </query>
+</unabto_queries>
