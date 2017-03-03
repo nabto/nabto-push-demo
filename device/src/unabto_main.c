@@ -1,7 +1,6 @@
 /**
  *  Implementation of main for uNabto SDK
  */
-
 #include <sys/types.h>
 #include <modules/cli/gopt/gopt.h> // http://www.purposeful.co.uk/software/gopt/
 #include <modules/util/read_hex.h>
@@ -9,6 +8,10 @@
 #include "unabto/unabto_common_main.h"
 #include "unabto/unabto_logging.h"
 #include "demo_application.h"
+#include <stdio.h>
+#include <unistd.h>
+
+#define STDIN 0
 
 struct configuration {
     const char *device_id;
@@ -72,11 +75,25 @@ int main(int argc, char* argv[])
     demo_init();
 
     NABTO_LOG_INFO(("Push demo stub [%s] running!", nms->id));
-
+    fd_set fds;
+    int maxfd = STDIN;
+    struct timeval tv = {1, 0};
+    char buf[5];
     while (true) {
         unabto_tick();
-        nabto_yield(10);
+        //nabto_yield(10);
         demo_application_tick();
+        FD_ZERO(&fds);
+        FD_SET(STDIN, &fds); 
+
+        select(maxfd+1, &fds, NULL, NULL, &tv); 
+
+        if (FD_ISSET(STDIN, &fds)){
+            read(STDIN_FILENO, buf, 5);
+            printf("\nUser input - stdin\n");
+            sendPN();
+        }
+        //printf("continueing");
     }
 
     unabto_close();

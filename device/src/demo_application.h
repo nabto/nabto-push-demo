@@ -10,6 +10,7 @@ struct pushSubscriber {
     uint8_t fingerprint[NP_TRUNCATED_SHA256_LENGTH_BYTES];
 };
 
+void sendPN();
 void demo_application_set_device_name(const char* name);
 void demo_application_tick();
 void demo_init();

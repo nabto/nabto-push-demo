@@ -129,6 +129,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                     //logBox.append("Using app id: " + appIdField.getText().toString() + " and Player ID: " + userId + "\n");
                     // TODO: CALL UNABTO TO ADD CLIENT
+                    try {
+                        String item = spinner.getSelectedItem().toString();
+                    } catch (NullPointerException e){
+                        Log.d("subBut_click","Cannot get selected device");
+                        return;
+                    }
                     String dev = "nabto://" + spinner.getSelectedItem().toString()  + "/push_subscribe.json?staticData=" + staticData.toString();
                     logBox.append("Subscribing using:\n " + dev + "\n");
                     RpcResult res = nabto.rpcInvoke(dev, session);
