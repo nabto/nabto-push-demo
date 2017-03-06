@@ -33,24 +33,6 @@ public class MainActivity extends AppCompatActivity {
     private String userId_;
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Object obj = spinner.getSelectedItem();
-        if(obj == null){
-            Log.d("onResume","Cannot get selected device");
-            subBut.setChecked(false);
-            return;
-        }        String dev = "nabto://" + obj.toString()  + "/is_subscribed.json";
-        RpcResult res = nabto.rpcInvoke(dev, session);
-        if(res.getStatus() == NabtoStatus.OK){
-            // subscribed
-            subBut.setChecked(true);
-        } else {
-            subBut.setChecked(false);
-        }
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Android initialization
         super.onCreate(savedInstanceState);
