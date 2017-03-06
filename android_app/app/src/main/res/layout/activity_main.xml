@@ -50,18 +50,9 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
-    <Button
-        android:text="Trigger Push Notification"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/subButton"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/triggerBut" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/triggerBut"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/logBox"
@@ -69,7 +60,8 @@
         android:layout_alignParentRight="true"
         android:scrollbars = "vertical"
         android:gravity="bottom"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/subButton" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -87,4 +79,27 @@
         android:textOn="@string/subOn"
         android:layout_below="@+id/playerIdField"
         android:layout_centerHorizontal="true" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/subButton"
+        android:layout_toStartOf="@+id/subButton"
+        android:layout_marginEnd="11dp"
+        android:layout_marginTop="13dp"
+        android:id="@+id/progressBar"
+        android:visibility="invisible"
+        android:indeterminate="true"/>
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/spinner"
+        android:layout_toStartOf="@+id/scanButton"
+        android:layout_marginBottom="13dp"
+        android:id="@+id/progressBar2"
+        android:visibility="invisible"
+        android:indeterminate="true"/>
 </RelativeLayout>

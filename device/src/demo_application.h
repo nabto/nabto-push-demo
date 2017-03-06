@@ -11,7 +11,6 @@ struct pushSubscriber {
 };
 
 void sendPN();
-void demo_application_set_device_name(const char* name);
 void demo_application_tick();
 void demo_init();
 

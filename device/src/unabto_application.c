@@ -16,6 +16,7 @@ static int32_t heatpump_target_temperature_ = 23;
 #define MAX_SUBSCRIBERS 10
 enum fp_acl_response_status {
     PUSH_STATUS_OK = 0,
+    PUSH_STATUS_FAILED = 1,
     PUSH_STATUS_USER_DB_FULL = 2,
     PUSH_STATUS_REMOVE_FAILED = 4
 };
@@ -62,13 +63,12 @@ void demo_init() {
     snprintf(device_name_, sizeof(device_name_), DEVICE_NAME_DEFAULT);
     FILE* subFile = fopen(PERSISTANCE_FILENAME, "rb+");
     if (subFile == NULL) {
-        
+        // No file, initializing without known devices
+        return;
     }
+    numSubs_ = fread(subs_, sizeof(struct pushSubscriber), MAX_SUBSCRIBERS, subFile);
+    fclose(subFile);
         
-}
-
-void demo_application_set_device_name(const char* name) {
-    strncpy(device_name_, name, MAX_DEVICE_NAME_LENGTH);
 }
 
 void demo_application_tick() {
@@ -89,32 +89,6 @@ void demo_application_tick() {
 #endif
 }
 
-int copy_buffer(unabto_query_request* read_buffer, uint8_t* dest, uint16_t bufSize, uint16_t* len) {
-    uint8_t* buffer;
-    if (!(unabto_query_read_uint8_list(read_buffer, &buffer, len))) {
-        return AER_REQ_TOO_SMALL;
-    }
-    if (*len > bufSize) {
-        return AER_REQ_TOO_LARGE;
-    }
-    memcpy(dest, buffer, *len);
-    return AER_REQ_RESPONSE_READY;
-}
-
-int copy_string(unabto_query_request* read_buffer, char* dest, uint16_t destSize) {
-    uint16_t len;
-    int res = copy_buffer(read_buffer, (uint8_t*)dest, destSize-1, &len);
-    if (res != AER_REQ_RESPONSE_READY) {
-        return res;
-    }
-    dest[len] = 0;
-    return AER_REQ_RESPONSE_READY;
-}
-
-int write_string(unabto_query_response* write_buffer, const char* string) {
-    return unabto_query_write_uint8_list(write_buffer, (uint8_t *)string, strlen(string));
-}
-
 static bool read_string_null_terminated(unabto_query_request* read_buffer, char* out, size_t outlen)
 {
     uint8_t* list;
@@ -127,6 +101,23 @@ static bool read_string_null_terminated(unabto_query_request* read_buffer, char*
     
     memcpy(out, list, MIN(length, outlen-1));
     return true;
+}
+
+void updatePersistanceFile(void){
+    FILE* subFile = fopen(PERSISTANCE_FILENAME, "w+");
+    if (subFile == NULL) {
+        // Error Opening file
+        NABTO_LOG_ERROR(("Unable to open persistance file for writing"));
+        return;
+    }
+    int nmemb = fwrite(subs_, sizeof(struct pushSubscriber), numSubs_, subFile);
+    if (nmemb != numSubs_){
+        // Error writing to file
+        NABTO_LOG_ERROR(("Error while writing to persistance file"));
+        return;
+    }
+    fclose(subFile);
+
 }
 
 void sendPN(void){
@@ -145,6 +136,9 @@ void sendPN(void){
         staticData.len = strlen(subs_[i].staticData);
         NABTO_LOG_INFO(("sending: staticData.len %i, staticData.data: %s, msg.len: %i, msg.data: %s",staticData.len,staticData.data, msg.len, msg.data));
         send_push_notification(1,staticData,msg,&callback, (void*)&testContext);
+    }
+    if(numSubs_ == 0){
+        NABTO_LOG_INFO(("No clients subscribed"));
     }
 }
 
@@ -171,6 +165,7 @@ application_event_result application_event(application_request* request,
                     return AER_REQ_TOO_SMALL;
                 }
                 if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+                updatePersistanceFile();
                 return AER_REQ_RESPONSE_READY;
             }
         }
@@ -182,6 +177,7 @@ application_event_result application_event(application_request* request,
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
         numSubs_++;
         NABTO_LOG_INFO(("numSubs_ is now %i, Just added client with static data: %s",numSubs_,subs_[numSubs_-1].staticData));
+        updatePersistanceFile();
         return AER_REQ_RESPONSE_READY;
 
         case 20010:
@@ -192,16 +188,31 @@ application_event_result application_event(application_request* request,
                 memmove(&subs_[i],&subs_[i+1],sizeof(struct pushSubscriber)*(numSubs_-i-1));
                 numSubs_--;
                 if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+                updatePersistanceFile();
                 return AER_REQ_RESPONSE_READY;
             }
         }
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_REMOVE_FAILED)) return AER_REQ_RSP_TOO_LARGE;
+        updatePersistanceFile();
         return AER_REQ_RESPONSE_READY;
     case 20020:
         // trigger.json
         sendPN();
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
         return AER_REQ_RESPONSE_READY;
+        
+    case 20030:
+        // is_subscribed.json
+        for(int i = 0; i < numSubs_; i++){
+            if(memcmp(request->connection->fingerprint, subs_[i].fingerprint, NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
+                // Client known
+                if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+                return AER_REQ_RESPONSE_READY;
+            }
+        }
+        if (!unabto_query_write_uint8(query_response, PUSH_STATUS_FAILED)) return AER_REQ_RSP_TOO_LARGE;
+        return AER_REQ_RESPONSE_READY;
+        
         
     default:
         NABTO_LOG_WARN(("Unhandled query id: %u", request->queryId));

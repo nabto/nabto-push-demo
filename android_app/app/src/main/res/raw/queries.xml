@@ -27,6 +27,15 @@
         <request>
         </request>
         <response format="json">
+            <parameter name="status" type="uint8"/>
+        </response>
+    </query>
+    <!-- Ask if subscribed to push notifications -->
+    <query name="is_subscribed.json" id="20030">
+        <request>
+        </request>
+        <response format="json">
+            <parameter name="status" type="uint8"/>
         </response>
     </query>
 </unabto_queries>

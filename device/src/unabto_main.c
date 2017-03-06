@@ -64,10 +64,6 @@ int main(int argc, char* argv[])
         nms->localPort = atoi(config.local_port_str);
     }
 
-    if (config.device_name) {
-        demo_application_set_device_name(config.device_name);
-    }
-
     if (!unabto_init()) {
         NABTO_LOG_FATAL(("Failed at nabto_main_init"));
     }
@@ -77,23 +73,23 @@ int main(int argc, char* argv[])
     NABTO_LOG_INFO(("Push demo stub [%s] running!", nms->id));
     fd_set fds;
     int maxfd = STDIN;
-    struct timeval tv = {1, 0};
+    struct timeval tv;
     char buf[5];
     while (true) {
+        tv.tv_sec = 0;
+        tv.tv_usec = 500000;
         unabto_tick();
-        //nabto_yield(10);
         demo_application_tick();
         FD_ZERO(&fds);
         FD_SET(STDIN, &fds); 
 
-        select(maxfd+1, &fds, NULL, NULL, &tv); 
+        int retval = select(maxfd+1, &fds, NULL, NULL, &tv); 
 
         if (FD_ISSET(STDIN, &fds)){
             read(STDIN_FILENO, buf, 5);
-            printf("\nUser input - stdin\n");
+            NABTO_LOG_INFO(("User triggered a push notification"));
             sendPN();
         }
-        //printf("continueing");
     }
 
     unabto_close();
@@ -142,16 +138,3 @@ bool parse_argv(int argc, char* argv[], struct configuration* config) {
     return true;
 }
 
-void nabto_yield(int msec)
-{
-#ifdef WIN32
-    Sleep(msec);
-#elif defined(__MACH__)
-    if (msec) usleep(1000*msec);
-#else
-    if (msec) usleep(1000*msec); else sched_yield();
-#endif
-}
-
-
-    

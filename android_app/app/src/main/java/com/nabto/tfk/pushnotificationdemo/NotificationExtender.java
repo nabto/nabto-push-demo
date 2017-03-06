@@ -10,8 +10,6 @@ import com.onesignal.OSNotificationReceivedResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigInteger;
-
 /**
  * Created by tfk on 28/02/17.
  */
