@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.nabto.api.NabtoApi;
 
@@ -13,6 +14,7 @@ import java.util.Collection;
 
 /**
  * Created by tfk on 06/03/17.
+ * Class handling the discovery of local uNabto devices
  */
 
 public class discoverLocalHandler  extends AsyncTask<Void, Void, ArrayAdapter<String> > {
@@ -46,6 +48,9 @@ public class discoverLocalHandler  extends AsyncTask<Void, Void, ArrayAdapter<St
     @Override
     protected void onPostExecute(ArrayAdapter<String> dataAdapter) {
         spinner.setAdapter(dataAdapter);
+        if(devs.isEmpty()){
+            ((TextView)mView.findViewById(R.id.logBox)).append("No devices found, please ensure your device is turned on and connected to the local network\n");
+        }
         mView.findViewById(R.id.progressBar2).setVisibility(View.INVISIBLE);
 
     }

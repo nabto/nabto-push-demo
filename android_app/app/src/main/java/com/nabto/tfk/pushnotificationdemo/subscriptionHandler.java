@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 
 /**
  * Created by tfk on 06/03/17.
+ * Class handling (un-)subscribing to push notifications on the uNabto device
  */
 
 public class subscriptionHandler extends AsyncTask<Void, Void, String > {
@@ -74,7 +75,7 @@ public class subscriptionHandler extends AsyncTask<Void, Void, String > {
     protected String doInBackground(Void... param){
         String retStr = "";
         if(!shouldRun){
-            retStr = "preExecute marked should not run";
+            retStr = "No device selected, please scan for local devices.\n";
             return retStr;
         }
         if (isChecked) {
