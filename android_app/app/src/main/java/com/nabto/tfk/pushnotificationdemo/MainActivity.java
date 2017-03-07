@@ -1,6 +1,7 @@
 package com.nabto.tfk.pushnotificationdemo;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -9,7 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -25,8 +25,6 @@ import java.io.InputStreamReader;
 public class MainActivity extends AppCompatActivity {
     private NabtoApi nabto;
     private Session session;
-    private Spinner spinner;
-    private ToggleButton subBut;
     private EditText appIdField;
     private TextView playerIdField;
     private Context context;
@@ -65,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         InputStream is = getResources().openRawResource(R.raw.queries);
         str = getStringFromInputStream(is);
 
-        Log.d("onCreate", "xml:\n" + str);
+        Log.d("onCreate", "xml: " + str);
         RpcResult res = nabto.rpcSetDefaultInterface(str, session);
         if (res.getStatus() != NabtoStatus.OK) {
             Log.e("onCreate", "rpcSetDefaultInterface failed with: " + res.getJson());
@@ -73,13 +71,15 @@ public class MainActivity extends AppCompatActivity {
 
         //Initializing app GUI context
         playerIdField = (TextView) findViewById(R.id.playerIdField);
-        spinner = (Spinner) findViewById(R.id.spinner);
         Button scanButton = (Button) findViewById(R.id.scanButton);
-        subBut = (ToggleButton) findViewById(R.id.subButton);
+        ToggleButton subBut = (ToggleButton) findViewById(R.id.subButton);
         appIdField = (EditText) findViewById(R.id.editText);
+
         TextView logBox = (TextView) findViewById(R.id.logBox);
         logBox.setMovementMethod(new ScrollingMovementMethod());
 
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        appIdField.setText(settings.getString("appid",getResources().getString(R.string.noAppID)));
         // Getting the OneSignal Player ID
         OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
             @Override
@@ -116,6 +116,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("appid",((EditText) findViewById(R.id.editText)).getText().toString());
+        editor.commit();
     }
 
     // Help function to convert the queries.xml file into a string
