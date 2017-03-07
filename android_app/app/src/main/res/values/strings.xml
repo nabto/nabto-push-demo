@@ -9,7 +9,8 @@
     <string name="noDevSpinner">No devices available</string>
     <string name="clientName">PushDemoApp</string>
     <string name="clientPass">123456</string>
-
+    <string name="scanButText">Scan for local devices</string>
+    <string name="playerText">OneSignal App ID:</string>
     <string-array name="noDevList">
         <item>No devices available</item>
     </string-array>

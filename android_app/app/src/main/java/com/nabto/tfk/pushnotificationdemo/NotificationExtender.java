@@ -24,6 +24,8 @@ public class NotificationExtender extends NotificationExtenderService {
             public NotificationCompat.Builder extend(NotificationCompat.Builder builder) {
                 // using the builder, the notification can be changed at will
                 // This is where languages should be handled
+                // In this example, the device sends a single value called temp
+                // The rest of the notification text is added here
                 JSONObject data = receivedResult.payload.additionalData;
                 int i = 0;
                 try{
@@ -34,7 +36,7 @@ public class NotificationExtender extends NotificationExtenderService {
                     Log.e("notificationExt","data is: " + data.toString());
                 }
                 builder.setContentText("The temperature is: " + i + ". Your house may be on fire.");
-                builder.setContentTitle("THE ROOF IS ON FIRE");
+                builder.setContentTitle("Possible fire");
                 return builder;
             }
         };
@@ -42,6 +44,7 @@ public class NotificationExtender extends NotificationExtenderService {
         OSNotificationDisplayedResult displayedResult = displayNotification(overrideSettings);
         Log.d("OneSignalExample", "Notification displayed with id: " + displayedResult.androidNotificationId);
 
+        // returning false to display the notification
         return false;
     }
 }

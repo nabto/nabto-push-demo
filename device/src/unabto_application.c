@@ -196,12 +196,6 @@ application_event_result application_event(application_request* request,
         updatePersistanceFile();
         return AER_REQ_RESPONSE_READY;
     case 20020:
-        // trigger.json
-        sendPN();
-        if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
-        return AER_REQ_RESPONSE_READY;
-        
-    case 20030:
         // is_subscribed.json
         for(int i = 0; i < numSubs_; i++){
             if(memcmp(request->connection->fingerprint, subs_[i].fingerprint, NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){

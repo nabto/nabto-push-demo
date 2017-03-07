@@ -17,7 +17,7 @@ import java.util.Collection;
  * Class handling the discovery of local uNabto devices
  */
 
-public class discoverLocalHandler  extends AsyncTask<Void, Void, ArrayAdapter<String> > {
+class discoverLocalHandler  extends AsyncTask<Void, Void, ArrayAdapter<String> > {
 
 
     private View mView;
@@ -26,18 +26,19 @@ public class discoverLocalHandler  extends AsyncTask<Void, Void, ArrayAdapter<St
     private Collection<String> devs;
     private Context context;
 
-
-    //public subscriptionHandler(Context context, Activity act, String userId, NabtoApi nab, Session sess, boolean checked){
-    public discoverLocalHandler(Context contextIn, View rootview, NabtoApi nab){
+    // Constructor initializing references to the main activity
+    discoverLocalHandler(Context contextIn, View rootview, NabtoApi nab){
         mView = rootview;
         context = contextIn;
         nabto = nab;
         spinner = (Spinner) mView.findViewById(R.id.spinner);
     }
+    // Showing progressBar to signal the discover is in running
     @Override
     protected void onPreExecute() {
         mView.findViewById(R.id.progressBar2).setVisibility(View.VISIBLE);
     }
+    // Scanning for local uNabto devices.
     @Override
     protected ArrayAdapter<String> doInBackground(Void... param){
         devs = nabto.getLocalDevices();
@@ -45,6 +46,7 @@ public class discoverLocalHandler  extends AsyncTask<Void, Void, ArrayAdapter<St
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         return dataAdapter;
     }
+    // doInBackground is not running in main thread, so results are sent to the UI in onPostExecute
     @Override
     protected void onPostExecute(ArrayAdapter<String> dataAdapter) {
         spinner.setAdapter(dataAdapter);

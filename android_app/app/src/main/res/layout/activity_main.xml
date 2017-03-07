@@ -11,7 +11,7 @@
     tools:context="com.nabto.tfk.pushnotificationdemo.MainActivity">
 
     <Button
-        android:text="Scan for local devices"
+        android:text="@string/scanButText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/scanButton"
@@ -29,7 +29,7 @@
         android:spinnerMode="dialog" />
 
     <TextView
-        android:text="OneSignal App ID:"
+        android:text="@string/playerText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/spinner"
@@ -70,7 +70,6 @@
         android:layout_centerHorizontal="true" />
 
     <ToggleButton
-        android:text="ToggleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/subButton"
