@@ -85,7 +85,7 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
                 Log.e("subBut_click", "Unable to put to JSON object");
                 return null;
             }
-            String dev = "nabto://" + obj.toString()  + "/push_subscribe.json?staticData=" + staticData.toString();
+            String dev = "nabto://" + obj.toString()  + "/push_subscribe.json?staticData=" + staticData.toString() + "&pnsid=1";
             retStr = retStr + "Subscribing using:\n " + dev + "\n";
             RpcResult res = nabto.rpcInvoke(dev, session);
             if (res.getStatus() != NabtoStatus.OK) {

@@ -134,8 +134,8 @@ void sendPN(void){
     for(int i = 0; i<numSubs_; i++){
         staticData.data = subs_[i].staticData;
         staticData.len = strlen(subs_[i].staticData);
-        NABTO_LOG_INFO(("sending: staticData.len %i, staticData.data: %s, msg.len: %i, msg.data: %s",staticData.len,staticData.data, msg.len, msg.data));
-        send_push_notification(1,staticData,msg,&callback, (void*)&testContext);
+        NABTO_LOG_INFO(("sending to pnsid: %i with: staticData.len %i, staticData.data: %s, msg.len: %i, msg.data: %s",subs_[i].pnsid,staticData.len,staticData.data, msg.len, msg.data));
+        send_push_notification(subs_[i].pnsid,staticData,msg,&callback, (void*)&testContext);
     }
     if(numSubs_ == 0){
         NABTO_LOG_INFO(("No clients subscribed"));
@@ -164,6 +164,9 @@ application_event_result application_event(application_request* request,
                 if (!read_string_null_terminated(query_request, subs_[i].staticData, STATIC_DATA_BUFFER_LENGTH )){
                     return AER_REQ_TOO_SMALL;
                 }
+                if (!unabto_query_read_uint16(query_request, &subs_[i].pnsid)){
+                    return AER_REQ_TOO_SMALL;
+                }
                 if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
                 updatePersistanceFile();
                 return AER_REQ_RESPONSE_READY;
@@ -172,6 +175,9 @@ application_event_result application_event(application_request* request,
         NABTO_LOG_INFO(("New device found adding to subs_"));
         memcpy(subs_[numSubs_].fingerprint, request->connection->fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES);
         if (!read_string_null_terminated(query_request, subs_[numSubs_].staticData, STATIC_DATA_BUFFER_LENGTH )){
+            return AER_REQ_TOO_SMALL;
+        }
+        if (!unabto_query_read_uint16(query_request, &subs_[numSubs_].pnsid)){
             return AER_REQ_TOO_SMALL;
         }
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;

@@ -8,6 +8,7 @@
     <query name="push_subscribe.json" id="20000">
         <request>
             <parameter name="staticData" type="raw"/>
+            <parameter name="pnsid" type="uint16"/>
         </request>
         <response format="json">
             <parameter name="status" type="uint8"/>
