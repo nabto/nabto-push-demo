@@ -25,7 +25,10 @@ struct pushSubscriber subs_[MAX_SUBSCRIBERS];
 int numSubs_ = 0;
 
 int testContext = 394;
-const uint8_t* msgData = "{\"temp\": 943}";
+//const uint8_t* msgData = "{\"temp\": 943}";
+//const uint8_t* msgData = "{\"title\": \"title_1\", \"titleArgs\":[], \"body\":\"body_1\",\"bodyArgs\": [\"943\"]}";
+const uint8_t* msgData = "{\"title\": \"title_1\", \"body\":\"body_1\",\"bodyArgs\": [\"943\"]}";
+//const uint8_t* msgData = "{\"bodyArgs\": [\"943\"] , \"body\":\"body_1\"}";
 
 void callback(void* ptr, const unabto_push_hint* hint){
     int i;
