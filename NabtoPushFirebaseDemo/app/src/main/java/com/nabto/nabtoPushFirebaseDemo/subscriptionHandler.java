@@ -51,7 +51,7 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
         subBut = (ToggleButton) mView.findViewById(R.id.subButton);
         logBox = (TextView) mView.findViewById(R.id.logBox);
     }
-    // Getting information from the UI must be done in the main thread before forking in doInBackground()
+    // Getting information from the UI must be done in the main thread before forking into doInBackground()
     @Override
     protected void onPreExecute() {
         mView.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
@@ -63,7 +63,7 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
             return;
         }
     }
-    // invoking RPC at the selected uNabto device depending on the toggle button status
+    // invoking RPC at the selected uNabto device depending on the toggle button status, running in worker thread
     @Override
     protected String doInBackground(Void... param){
         String retStr = "";
@@ -74,8 +74,12 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
         if (isChecked) {
             Log.d("subBut_click", "Using registration token: " + token_);
             JSONObject staticData = new JSONObject();
+            JSONObject notification = new JSONObject();
+
             try {
-                staticData.put("token", token_);
+                staticData.put("to", token_);
+                notification.put("sound","default");
+                staticData.put("notification",notification);
             } catch (JSONException e) {
                 Log.e("subBut_click", "Unable to put to JSON object");
                 return null;

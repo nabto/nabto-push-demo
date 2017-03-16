@@ -34,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
-
         // Nabto Initialization
         nabto = new NabtoApi(new NabtoAndroidAssetManager(this));
         nabto.startup();

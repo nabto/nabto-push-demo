@@ -3,32 +3,26 @@
  */
 #include "demo_application.h"
 #include "unabto/unabto_app.h"
-#include <unabto/unabto_util.h>
+#include "unabto/unabto_util.h"
+#include "unabto/unabto_protocol_defines.h"
 #include <modules/stateful_push_service/stateful_push_service.h>
 #include <stdio.h>
 
-static int32_t heatpump_room_temperature_ = 19;
-static int32_t heatpump_target_temperature_ = 23;
-
-#define DEVICE_NAME_DEFAULT "Push stub"
 #define PERSISTANCE_FILENAME "persistence.bin"
 #define MAX_DEVICE_NAME_LENGTH 50
 #define MAX_SUBSCRIBERS 10
+#define MAX_DYNAMIC_DATA_LENGTH 256
 enum fp_acl_response_status {
     PUSH_STATUS_OK = 0,
     PUSH_STATUS_FAILED = 1,
     PUSH_STATUS_USER_DB_FULL = 2,
     PUSH_STATUS_REMOVE_FAILED = 4
 };
-static char device_name_[MAX_DEVICE_NAME_LENGTH];
 struct pushSubscriber subs_[MAX_SUBSCRIBERS];
 int numSubs_ = 0;
 
 int testContext = 394;
-//const uint8_t* msgData = "{\"temp\": 943}";
-//const uint8_t* msgData = "{\"title\": \"title_1\", \"titleArgs\":[], \"body\":\"body_1\",\"bodyArgs\": [\"943\"]}";
-const uint8_t* msgData = "{\"title\": \"title_1\", \"body\":\"body_1\",\"bodyArgs\": [\"943\"]}";
-//const uint8_t* msgData = "{\"bodyArgs\": [\"943\"] , \"body\":\"body_1\"}";
+uint8_t dynData[MAX_DYNAMIC_DATA_LENGTH];
 
 void callback(void* ptr, const unabto_push_hint* hint){
     int i;
@@ -63,7 +57,6 @@ void callback(void* ptr, const unabto_push_hint* hint){
     NABTO_LOG_INFO(("Got the context value: %i",*(int*)ptr));
 }
 void demo_init() {
-    snprintf(device_name_, sizeof(device_name_), DEVICE_NAME_DEFAULT);
     FILE* subFile = fopen(PERSISTANCE_FILENAME, "rb+");
     if (subFile == NULL) {
         // No file, initializing without known devices
@@ -75,21 +68,7 @@ void demo_init() {
 }
 
 void demo_application_tick() {
-#ifndef WIN32
-    static time_t time_last_update_ = 0;
-    time_t now = time(0);
-    if (now - time_last_update_ > 2) {
-        if (heatpump_room_temperature_ < heatpump_target_temperature_) {
-            heatpump_room_temperature_++;
-        } else if (heatpump_room_temperature_ > heatpump_target_temperature_) {
-            heatpump_room_temperature_--;
-        }
-        time_last_update_ = now;
-    }
-#else
-    size_t ticks_ = 0;
-    heatpump_room_temperature_ = heatpump_target_temperature_ + ticks++ % 2;
-#endif
+
 }
 
 static bool read_string_null_terminated(unabto_query_request* read_buffer, char* out, size_t outlen)
@@ -127,17 +106,27 @@ void sendPN(void){
     push_payload_data msg;
     push_payload_data staticData;
     NABTO_LOG_INFO(("Sending Push notifications"));
-    msg.data = msgData;
-    msg.len = strlen(msgData);
-    msg.purpose = 2;
-    msg.encoding = 1;
-    staticData.purpose = 1;
-    staticData.encoding = 1;
+    uint8_t* ptr = dynData;
+    WRITE_FORWARD_U8(ptr,NP_PAYLOAD_PUSH_DATA_VALUE_BODY_LOC_STRING_ARG);
+    WRITE_FORWARD_U8(ptr,3);
+    memcpy(ptr,"943\0",3);ptr += 3;
+    WRITE_FORWARD_U8(ptr,NP_PAYLOAD_PUSH_DATA_VALUE_BODY_LOC_KEY);
+    WRITE_FORWARD_U8(ptr,6);
+    memcpy(ptr,"body_1\0",6);ptr+=6;
+    WRITE_FORWARD_U8(ptr,NP_PAYLOAD_PUSH_DATA_VALUE_TITLE_LOC_KEY);
+    WRITE_FORWARD_U8(ptr,7);
+    memcpy(ptr,"title_1\0",7);ptr+=7;
+    msg.data = dynData;
+    msg.len = 3+2+6+2+7+2;
+    msg.purpose = NP_PAYLOAD_PUSH_DATA_PURPOSE_DYNAMIC;
+    msg.encoding = NP_PAYLOAD_PUSH_DATA_ENCODING_TLV;
+    staticData.purpose = NP_PAYLOAD_PUSH_DATA_PURPOSE_STATIC;
+    staticData.encoding = NP_PAYLOAD_PUSH_DATA_ENCODING_JSON;
 
     for(int i = 0; i<numSubs_; i++){
         staticData.data = subs_[i].staticData;
         staticData.len = strlen(subs_[i].staticData);
-        NABTO_LOG_INFO(("sending to pnsid: %i with: staticData.len %i, staticData.data: %s, msg.len: %i, msg.data: %s",subs_[i].pnsid,staticData.len,staticData.data, msg.len, msg.data));
+        NABTO_LOG_INFO(("sending to pnsid: %i with: staticData.len %i, sd.len source: %i, staticData.data: %s, msg.len: %i, msg.data: %s",subs_[i].pnsid,staticData.len, strlen(subs_[i].staticData),staticData.data, msg.len, msg.data));
         send_push_notification(subs_[i].pnsid,staticData,msg,&callback, (void*)&testContext);
     }
     if(numSubs_ == 0){

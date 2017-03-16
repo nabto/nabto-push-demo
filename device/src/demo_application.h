@@ -1,7 +1,7 @@
 #ifndef _DEMO_APPLICATION_H
 #define _DEMO_APPLICATION_H
 
-#define STATIC_DATA_BUFFER_LENGTH 256
+#define STATIC_DATA_BUFFER_LENGTH 1000
 #include <stdint.h>
 #include <unabto/unabto_protocol_defines.h>
 

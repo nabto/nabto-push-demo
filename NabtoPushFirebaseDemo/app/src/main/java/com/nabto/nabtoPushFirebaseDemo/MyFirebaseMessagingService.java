@@ -1,9 +1,23 @@
 package com.nabto.nabtoPushFirebaseDemo;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.app.Notification;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.List;
 
 /**
  * Created by tfk on 10/03/17.
@@ -15,7 +29,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService{
         Log.d(TAG, "Firebase messaging service started");
 
     }
-
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage){
         // TODO(developer): Handle FCM messages here.
@@ -32,7 +45,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService{
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
         }
 
-        // Also if you intend on generating your own notifications as a result of a received FCM
-        // message, here is where that should be initiated. See sendNotification method below.
+        Intent dialogIntent = new Intent(this, AlertActivity.class);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        dialogIntent.putExtra("msg", remoteMessage);
+        startActivity(dialogIntent);
     }
 }
