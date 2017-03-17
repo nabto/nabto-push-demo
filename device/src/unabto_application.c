@@ -103,34 +103,31 @@ void updatePersistanceFile(void){
 }
 
 void sendPN(void){
-    push_payload_data msg;
-    push_payload_data staticData;
+    int i;
     NABTO_LOG_INFO(("Sending Push notifications"));
-    uint8_t* ptr = dynData;
-    WRITE_FORWARD_U8(ptr,NP_PAYLOAD_PUSH_DATA_VALUE_BODY_LOC_STRING_ARG);
-    WRITE_FORWARD_U8(ptr,3);
-    memcpy(ptr,"943\0",3);ptr += 3;
-    WRITE_FORWARD_U8(ptr,NP_PAYLOAD_PUSH_DATA_VALUE_BODY_LOC_KEY);
-    WRITE_FORWARD_U8(ptr,6);
-    memcpy(ptr,"body_1\0",6);ptr+=6;
-    WRITE_FORWARD_U8(ptr,NP_PAYLOAD_PUSH_DATA_VALUE_TITLE_LOC_KEY);
-    WRITE_FORWARD_U8(ptr,7);
-    memcpy(ptr,"title_1\0",7);ptr+=7;
-    msg.data = dynData;
-    msg.len = 3+2+6+2+7+2;
-    msg.purpose = NP_PAYLOAD_PUSH_DATA_PURPOSE_DYNAMIC;
-    msg.encoding = NP_PAYLOAD_PUSH_DATA_ENCODING_TLV;
-    staticData.purpose = NP_PAYLOAD_PUSH_DATA_PURPOSE_STATIC;
-    staticData.encoding = NP_PAYLOAD_PUSH_DATA_ENCODING_JSON;
-
-    for(int i = 0; i<numSubs_; i++){
-        staticData.data = subs_[i].staticData;
-        staticData.len = strlen(subs_[i].staticData);
-        NABTO_LOG_INFO(("sending to pnsid: %i with: staticData.len %i, sd.len source: %i, staticData.data: %s, msg.len: %i, msg.data: %s",subs_[i].pnsid,staticData.len, strlen(subs_[i].staticData),staticData.data, msg.len, msg.data));
-        send_push_notification(subs_[i].pnsid,staticData,msg,&callback, (void*)&testContext);
-    }
     if(numSubs_ == 0){
         NABTO_LOG_INFO(("No clients subscribed"));
+        return;
+    }
+    for(i = 0; i<numSubs_; i++){
+        push_message pm;
+        if(!init_push_message(&pm, subs_[i].pnsid,subs_[i].staticData)){
+            NABTO_LOG_ERROR(("init_push_message failed"));
+            return;
+        }
+        if(!add_title_loc_key(&pm, "title_1")){
+            NABTO_LOG_ERROR(("add_title_loc_key failed"));
+            return;
+        }
+        if(!add_body_loc_key(&pm, "body_1")){
+            NABTO_LOG_ERROR(("add_body_loc_key failed"));
+            return;
+        }
+        if(!add_body_loc_string_arg(&pm, "943")){
+            NABTO_LOG_ERROR(("add_body_loc_string_arg failed"));
+            return ;
+        }   
+        send_push_message(&pm,&callback, (void*)&testContext);
     }
 }
 
