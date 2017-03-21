@@ -79,7 +79,6 @@ int main(int argc, char* argv[])
         tv.tv_sec = 0;
         tv.tv_usec = 500000;
         unabto_tick();
-        demo_application_tick();
         FD_ZERO(&fds);
         FD_SET(STDIN, &fds); 
 

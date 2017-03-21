@@ -2,19 +2,13 @@
     <string name="app_name">Push Notification Demo</string>
     <string name="subOn">Unsubscribe to Push Notifications</string>
     <string name="subOff">Subscribe to Push Notifications</string>
-    <!-- TODO: Remove my app id and insert generic text -->
-    <string name="noAppID">Please type your OneSignal app ID</string>
-    <!--string name="noAppID">58a88e8b-83f1-429d-8863-8d8180ae83ed</string-->
     <string name="noDev">Please select a local device</string>
     <string name="noDevSpinner">No devices available</string>
     <string name="clientName">PushDemoApp</string>
     <string name="clientPass">123456</string>
     <string name="scanButText">Scan for local devices</string>
-    <string name="playerText">OneSignal App ID:</string>
+
+    <!-- Strings used as push notification localization keys -->
     <string name="body_1">The current temperature is: %1$s, your house may be on fire</string>
     <string name="title_1">Temperature Warning</string>
-    <string-array name="noDevList">
-        <item>No devices available</item>
-    </string-array>
-
 </resources>

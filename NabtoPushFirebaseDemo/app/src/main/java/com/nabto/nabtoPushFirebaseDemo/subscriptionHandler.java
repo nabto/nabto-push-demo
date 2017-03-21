@@ -29,7 +29,8 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
     private NabtoApi nabto;
     private Session session;
     private boolean isChecked;
-
+    private String clientName;
+    private String clientPass;
     private Spinner spinner;
     private ToggleButton subBut;
     private TextView logBox;
@@ -46,6 +47,8 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
         shouldRun = true;
         session = sess;
         isChecked = checked;
+        clientName = mView.getResources().getString(R.string.clientName);
+        clientPass = mView.getResources().getString(R.string.clientPass);
 
         spinner = (Spinner) mView.findViewById(R.id.spinner);
         subBut = (ToggleButton) mView.findViewById(R.id.subButton);
@@ -90,6 +93,10 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
             if (res.getStatus() != NabtoStatus.OK) {
                 Log.d("subBut_click", "Rpc failed with: " + res.getJson());
                 retStr = retStr + "Rpc failed with: " + res.getJson() + "\n";
+                nabto.startup();
+                session = nabto.openSession(clientName, clientPass);
+                //  retrying with new session
+                nabto.rpcInvoke(dev, session);
             }
 
         } else {

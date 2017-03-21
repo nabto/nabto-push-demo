@@ -12,7 +12,6 @@ struct pushSubscriber {
 };
 
 void sendPN();
-void demo_application_tick();
 void demo_init();
 
 #endif

@@ -24,39 +24,54 @@ int numSubs_ = 0;
 int testContext = 394;
 uint8_t dynData[MAX_DYNAMIC_DATA_LENGTH];
 
+/* Callback function called when the core is done handling a push notification.
+ * @param ptr   void pointer to some context passed to the core
+ * @param hint  Hint to the success or failure of the push notification.
+ */
 void callback(void* ptr, const unabto_push_hint* hint){
-    int i;
     switch(*hint){
         case UNABTO_PUSH_HINT_OK:
+            // The Push notification was handled successfully by the basestation
             NABTO_LOG_INFO(("Callback with hint: OK"));
             break;
         case UNABTO_PUSH_HINT_QUEUE_FULL:
+            // The uNabto core queue has no room for more push notifications
             NABTO_LOG_INFO(("Callback with hint: QUEUE FULL"));
             break;
         case UNABTO_PUSH_HINT_INVALID_DATA_PROVIDED:
+            // The uNabto core cannot handle the data provided, probably too large for its communication buffer
             NABTO_LOG_INFO(("Callback with hint: INVALID DATA PROVIDED"));
             break;
         case UNABTO_PUSH_HINT_NO_CRYPTO_CONTEXT:
+            // uNabto core cannot send the notification as no cryptographic context exists, are you attached?
             NABTO_LOG_INFO(("Callback with hint: NO CRYPTO CONTEXT"));
             break;
         case UNABTO_PUSH_HINT_ENCRYPTION_FAILED:
+            // uNabto core failed to encrypt the push notification
             NABTO_LOG_INFO(("Callback with hint: ENCRYPTION FAILED"));
             break;
         case UNABTO_PUSH_HINT_FAILED:
+            // The Basestation received the notification but failed to handle it
             NABTO_LOG_INFO(("Callback with hint: FAILED"));
             break;
         case UNABTO_PUSH_HINT_QUOTA_EXCEEDED:
+            // The basestation received the notification but retured quota exceeded, this causes the core to enforce a backoff period where no notifications will be send. This can be used to handle overloaded servers or faulty devices sending notifications at high rates.
             NABTO_LOG_INFO(("Callback with hint: QUOTA EXCEEDED"));
             break;
         case UNABTO_PUSH_HINT_QUOTA_EXCEEDED_REATTACH:
+            // The basestation received the notification but return quota exceeded reattach. The uNabto core will not send notifications to the basestation before the device has been reattached. This can be used in extreme cases of faulty devices sending notifications at very high rates.
             NABTO_LOG_INFO(("Callback with hint: QUOTA EXCEEDED REATTACH"));
             break;
         default:
             NABTO_LOG_INFO(("Callback with unknown hint"));
     }
+    // The provided context can be used to take notification specific actions
     NABTO_LOG_INFO(("Got the context value: %i",*(int*)ptr));
 }
+
+/* Initialization function called by the main function at startup*/
 void demo_init() {
+    // Loading persistence file if present to remember subscribed clients even after device restart.
     FILE* subFile = fopen(PERSISTANCE_FILENAME, "rb+");
     if (subFile == NULL) {
         // No file, initializing without known devices
@@ -67,10 +82,7 @@ void demo_init() {
         
 }
 
-void demo_application_tick() {
-
-}
-
+/* help function used to copy a string from a buffer */
 static bool read_string_null_terminated(unabto_query_request* read_buffer, char* out, size_t outlen)
 {
     uint8_t* list;
@@ -85,6 +97,7 @@ static bool read_string_null_terminated(unabto_query_request* read_buffer, char*
     return true;
 }
 
+/* Help function used to update the persistance file when ever a client (un-)subscribes to push notifications */
 void updatePersistanceFile(void){
     FILE* subFile = fopen(PERSISTANCE_FILENAME, "w+");
     if (subFile == NULL) {
@@ -102,6 +115,7 @@ void updatePersistanceFile(void){
 
 }
 
+/* Function used to send push notifications, called from the main function */
 void sendPN(void){
     int i;
     NABTO_LOG_INFO(("Sending Push notifications"));
@@ -109,24 +123,37 @@ void sendPN(void){
         NABTO_LOG_INFO(("No clients subscribed"));
         return;
     }
+    // For loop constructing a push notification for each subscribed clients
     for(i = 0; i<numSubs_; i++){
         push_message pm;
+        // Initialize the push notification with the pnsid and static data provided by the client device on subscription
         if(!init_push_message(&pm, subs_[i].pnsid,subs_[i].staticData)){
             NABTO_LOG_ERROR(("init_push_message failed"));
             return;
         }
+        // Adding a title localization key to to the notification
+        // Using the title localization key instead of the title allows languages to be handled at the client
+        // Adding the key "title_1", this key must exists in the client app.
         if(!add_title_loc_key(&pm, "title_1")){
             NABTO_LOG_ERROR(("add_title_loc_key failed"));
             return;
         }
+        // Adding a body localization key to the notification similar to the title localization key.
+        // The "body_1" localization key must exist in the client app.
         if(!add_body_loc_key(&pm, "body_1")){
             NABTO_LOG_ERROR(("add_body_loc_key failed"));
             return;
         }
+        // in this example, the body localization key requires an argument which is added here.
+        // this function can be called several times if multiple arguments are needed.
+        // for now only string arguments are supported.
         if(!add_body_loc_string_arg(&pm, "943")){
             NABTO_LOG_ERROR(("add_body_loc_string_arg failed"));
             return ;
-        }   
+        }
+        // The constructed push notification is sent to the stateful_push_service module
+        // Additionally, the callback function to be called when the core has finished handling the notification is passed.
+        // The context for the callback function is passed as a void pointer, for this example it is simply an integer.
         send_push_message(&pm,&callback, (void*)&testContext);
     }
 }
@@ -139,13 +166,13 @@ application_event_result application_event(application_request* request,
 
     // handle requests as defined in interface definition shared with
     // client - for the default demo, see
-    // https://github.com/nabto/ionic-starter-nabto/blob/master/www/nabto/unabto_queries.xml
-
+    // https://github.com/nabto/nabto-push-demo/blob/master/NabtoPushFirebaseDemo/app/src/main/res/raw/queries.xml
     application_event_result res;
     
     switch (request->queryId) {
     case 20000: 
         // push_subscribe.json
+        // check if device is know, if so update the static information and PNS ID
         for(int i = 0; i < numSubs_; i++){
             if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
                 // Client known, updating static data
@@ -161,6 +188,7 @@ application_event_result application_event(application_request* request,
                 return AER_REQ_RESPONSE_READY;
             }
         }
+        // If the device is not found, its fingerprint is stored along with the static data and PNS ID 
         NABTO_LOG_INFO(("New device found adding to subs_"));
         memcpy(subs_[numSubs_].fingerprint, request->connection->fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES);
         if (!read_string_null_terminated(query_request, subs_[numSubs_].staticData, STATIC_DATA_BUFFER_LENGTH )){
@@ -172,11 +200,13 @@ application_event_result application_event(application_request* request,
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
         numSubs_++;
         NABTO_LOG_INFO(("numSubs_ is now %i, Just added client with static data: %s",numSubs_,subs_[numSubs_-1].staticData));
+        // The persistance file is updated with the new subscription information
         updatePersistanceFile();
         return AER_REQ_RESPONSE_READY;
 
-        case 20010:
-            // push_unsubscribe.json
+    case 20010:
+        // push_unsubscribe.json
+        // Find the device, remove it from the subscription list, and update the persistance file
         for(int i = 0; i < numSubs_; i++){
             if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
                 // Client known, updating static data
@@ -187,18 +217,21 @@ application_event_result application_event(application_request* request,
                 return AER_REQ_RESPONSE_READY;
             }
         }
+        // if device cannot be found return an error
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_REMOVE_FAILED)) return AER_REQ_RSP_TOO_LARGE;
         updatePersistanceFile();
         return AER_REQ_RESPONSE_READY;
     case 20020:
         // is_subscribed.json
+        // Determine if the device exists in the subscription list
         for(int i = 0; i < numSubs_; i++){
             if(memcmp(request->connection->fingerprint, subs_[i].fingerprint, NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
-                // Client known
+                // Client subscribed, returning OK
                 if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
                 return AER_REQ_RESPONSE_READY;
             }
         }
+        // Client not subscribed returning FAILED
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_FAILED)) return AER_REQ_RSP_TOO_LARGE;
         return AER_REQ_RESPONSE_READY;
         
