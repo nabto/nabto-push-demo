@@ -25,6 +25,15 @@
     NSMutableArray* devices_;
 }
 
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [[NabtoClient instance] nabtoStartup];
+    [[NabtoClient instance] nabtoOpenSessionGuest];
+    [self prepareRpcInterface];
+    [self refreshDevices];
+}
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return [devices_ count];
@@ -33,29 +42,12 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *simpleTableIdentifier = @"SimpleTableItem";
-    
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:simpleTableIdentifier];
-    
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:simpleTableIdentifier];
     }
-    
     cell.textLabel.text = [devices_ objectAtIndex:indexPath.row];
     return cell;
-}
-
-- (NSString*) createPushConfig {
-    NSMutableDictionary *data = [[NSMutableDictionary alloc]init];
-    NSMutableDictionary *notification = [[NSMutableDictionary alloc]init];
-    
-    NSString* token = [[FIRInstanceID instanceID] token];
-
-    [data setValue:token forKey:@"to"];
-    [notification setValue:@"default" forKey:@"sound"];
-    [data setValue:notification forKey:@"notification"];
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:0 error:nil];
-    return [[NSString alloc] initWithData:jsonData
-                                 encoding:NSUTF8StringEncoding];
 }
 
 - (void) tableView: (UITableView *) tableView didSelectRowAtIndexPath: (NSIndexPath *) indexPath
@@ -68,16 +60,9 @@
     NSString* url = [NSString stringWithFormat:@"nabto://%@/push_subscribe.json?staticData=%@&pnsid=1", device, [self createPushConfig]];
     nabto_status_t status = [[NabtoClient instance] nabtoRpcInvoke:url withResultBuffer:&jsonResponse];
     if (status == NABTO_OK) {
-        NSLog(@"Subscribed ok via url [%@]: %s", url, jsonResponse);
+        [self showAlert:@"Device successfully subscribed to notifications! Now suspend app and issue notification (just tap enter in demo device app)"];
+        NSLog(@"Subscribed ok via url [%@]:\n %s", url, jsonResponse);
     }
-}
-
-- (void)viewDidLoad {
-  [super viewDidLoad];
-  [[NabtoClient instance] nabtoStartup];
-  [[NabtoClient instance] nabtoOpenSessionGuest];
-  [self prepareRpcInterface];
-  [self refreshDevices];
 }
 
 - (void)prepareRpcInterface {
@@ -101,9 +86,23 @@
     }
 }
 
+- (NSString*) createPushConfig {
+    NSMutableDictionary *data = [[NSMutableDictionary alloc]init];
+    NSMutableDictionary *notification = [[NSMutableDictionary alloc]init];
+    
+    NSString* token = [[FIRInstanceID instanceID] token];
+    
+    [data setValue:token forKey:@"to"];
+    [notification setValue:@"default" forKey:@"sound"];
+    [data setValue:notification forKey:@"notification"];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:0 error:nil];
+    return [[NSString alloc] initWithData:jsonData
+                                 encoding:NSUTF8StringEncoding];
+}
+
 - (void)showAlert:(NSString*)msg {
     UIAlertController* alert = [UIAlertController
-                                alertControllerWithTitle:@"Error"
+                                alertControllerWithTitle:@"Notice"
                                 message:msg
                                 preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK"
@@ -137,13 +136,6 @@
     [self refreshDevices];
     
   // [END get_iid_token]
-}
-
-- (IBAction)handleSubscribeTouch:(id)sender {
-  // [START subscribe_topic]
-  [[FIRMessaging messaging] subscribeToTopic:@"/topics/news"];
-  NSLog(@"Subscribed to news topic");
-  // [END subscribe_topic]
 }
 
 @end
