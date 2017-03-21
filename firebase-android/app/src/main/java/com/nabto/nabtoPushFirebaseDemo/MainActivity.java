@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                nabto.startup();
                 new discoverLocalHandler(context,findViewById(android.R.id.content),nabto).execute();
             }
         });

@@ -93,10 +93,6 @@ class subscriptionHandler extends AsyncTask<Void, Void, String > {
             if (res.getStatus() != NabtoStatus.OK) {
                 Log.d("subBut_click", "Rpc failed with: " + res.getJson());
                 retStr = retStr + "Rpc failed with: " + res.getJson() + "\n";
-                nabto.startup();
-                session = nabto.openSession(clientName, clientPass);
-                //  retrying with new session
-                nabto.rpcInvoke(dev, session);
             }
 
         } else {
