@@ -44,11 +44,73 @@
     return cell;
 }
 
+- (NSString*) createPushConfig {
+    NSMutableDictionary *data = [[NSMutableDictionary alloc]init];
+    NSMutableDictionary *notification = [[NSMutableDictionary alloc]init];
+    
+    NSString* token = [[FIRInstanceID instanceID] token];
+
+    [data setValue:token forKey:@"to"];
+    [notification setValue:@"default" forKey:@"sound"];
+    [data setValue:notification forKey:@"notification"];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:0 error:nil];
+    return [[NSString alloc] initWithData:jsonData
+                                 encoding:NSUTF8StringEncoding];
+}
+
+- (void) tableView: (UITableView *) tableView didSelectRowAtIndexPath: (NSIndexPath *) indexPath
+{
+    UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
+    NSString* device = cell.textLabel.text;
+    NSLog(@"Tapped device [%@]", device);
+    char* jsonResponse;
+    
+    NSString* url = [NSString stringWithFormat:@"nabto://%@/push_subscribe.json?staticData=%@&pnsid=1", device, [self createPushConfig]];
+    nabto_status_t status = [[NabtoClient instance] nabtoRpcInvoke:url withResultBuffer:&jsonResponse];
+    if (status == NABTO_OK) {
+        NSLog(@"Subscribed ok via url [%@]: %s", url, jsonResponse);
+    }
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   [[NabtoClient instance] nabtoStartup];
   [[NabtoClient instance] nabtoOpenSessionGuest];
+  [self prepareRpcInterface];
   [self refreshDevices];
+}
+
+- (void)prepareRpcInterface {
+    char* errorMsg;
+    NSString* path = [[NSBundle mainBundle] pathForResource:@"queries" ofType:@"xml"];
+    if (!path) {
+        [self showAlert:@"Invalid path to interface definition"];
+        return;
+    }
+    NSString* xml = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
+    if (!xml) {
+        [self showAlert:@"Could not read interface definition"];
+        return;
+    }
+    if ([[NabtoClient instance] nabtoRpcSetDefaultInterface:xml withErrorMessage:&errorMsg] == NABTO_OK) {
+        NSLog(@"Successfully read RPC interface definition");
+    } else {
+        [self showAlert:[NSString stringWithFormat:
+                         @"Could not read RPC interface definition file: %s", errorMsg]];
+        [[NabtoClient instance] nabtoFree:errorMsg];
+    }
+}
+
+- (void)showAlert:(NSString*)msg {
+    UIAlertController* alert = [UIAlertController
+                                alertControllerWithTitle:@"Error"
+                                message:msg
+                                preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK"
+                                                       style:UIAlertActionStyleDefault
+                                                     handler:^(UIAlertAction *action){}];
+    [alert addAction:okAction];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)refreshDevices {

@@ -22,6 +22,7 @@
 		6014794A1E81BE6F00CD7355 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 601479491E81BE6E00CD7355 /* Localizable.strings */; };
 		6014794B1E81BE7500CD7355 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 601479491E81BE6E00CD7355 /* Localizable.strings */; };
 		6014794C1E81BE7600CD7355 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 601479491E81BE6E00CD7355 /* Localizable.strings */; };
+		6014794E1E81DD7000CD7355 /* queries.xml in Resources */ = {isa = PBXBuildFile; fileRef = 6014794D1E81DD7000CD7355 /* queries.xml */; };
 		607DE2B21E811E11006EB6C6 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5F9961061AE0CF4F0034F503 /* Images.xcassets */; };
 		607DE2B31E811E13006EB6C6 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5F9961071AE0CF4F0034F503 /* LaunchScreen.xib */; };
 		607DE2B51E811E84006EB6C6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 607DE2B41E811E84006EB6C6 /* GoogleService-Info.plist */; };
@@ -64,6 +65,7 @@
 		5FDE05581B0DAA090037B82F /* MessagingExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MessagingExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5FDE055C1B0DAA090037B82F /* AppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppTests.m; sourceTree = "<group>"; };
 		601479491E81BE6E00CD7355 /* Localizable.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		6014794D1E81DD7000CD7355 /* queries.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = queries.xml; sourceTree = "<group>"; };
 		607DE2B41E811E84006EB6C6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		78CCDCFC8D0F388A2758695C /* Pods-MessagingExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessagingExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MessagingExample/Pods-MessagingExample.debug.xcconfig"; sourceTree = "<group>"; };
 		91A105E9BFEF001D1957A68F /* Pods-MessagingExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessagingExampleTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-MessagingExampleTests/Pods-MessagingExampleTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -115,6 +117,7 @@
 		5F5A53431ADE670C00F81DF0 = {
 			isa = PBXGroup;
 			children = (
+				6014794D1E81DD7000CD7355 /* queries.xml */,
 				607DE2B41E811E84006EB6C6 /* GoogleService-Info.plist */,
 				5F5A534E1ADE670C00F81DF0 /* MessagingExample */,
 				5F5A537A1ADE67D500F81DF0 /* MessagingExampleSwift */,
@@ -328,6 +331,7 @@
 			files = (
 				6014794A1E81BE6F00CD7355 /* Localizable.strings in Resources */,
 				5F5A535B1ADE670C00F81DF0 /* Main.storyboard in Resources */,
+				6014794E1E81DD7000CD7355 /* queries.xml in Resources */,
 				607DE2B51E811E84006EB6C6 /* GoogleService-Info.plist in Resources */,
 				607DE2B31E811E13006EB6C6 /* LaunchScreen.xib in Resources */,
 				607DE2B21E811E11006EB6C6 /* Images.xcassets in Resources */,
