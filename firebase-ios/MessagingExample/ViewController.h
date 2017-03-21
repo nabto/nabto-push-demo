@@ -17,4 +17,8 @@
 @import UIKit;
 
 @interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
+
+@property (nonatomic, strong)IBOutlet UILabel* deviceId;
+@property (nonatomic, strong)IBOutlet UITableView* deviceTable;
+
 @end

@@ -15,17 +15,19 @@
 //
 
 #import "ViewController.h"
+#import "NabtoClient/NabtoClient.h"
+
 @import FirebaseInstanceID;
 @import FirebaseMessaging;
 
 @implementation ViewController
 {
-    NSArray *tableData;
+    NSMutableArray* devices_;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [tableData count];
+    return [devices_ count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -38,29 +40,42 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:simpleTableIdentifier];
     }
     
-    cell.textLabel.text = [tableData objectAtIndex:indexPath.row];
+    cell.textLabel.text = [devices_ objectAtIndex:indexPath.row];
     return cell;
 }
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  tableData = [NSArray arrayWithObjects:@"Egg Benedict", @"Mushroom Risotto", @"Full Breakfast", @"Hamburger", @"Ham and Egg Sandwich", @"Creme Brelee", @"White Chocolate Donut", @"Starbucks Coffee", @"Vegetable Curry", @"Instant Noodle with Egg", @"Noodle with BBQ Pork", @"Japanese Noodle with Pork", @"Green Tea", @"Thai Shrimp Cake", @"Angry Birds Cake", @"Ham and Cheese Panini", nil];
+  [[NabtoClient instance] nabtoStartup];
+  [[NabtoClient instance] nabtoOpenSessionGuest];
+  [self refreshDevices];
 }
 
-- (IBAction)handleLogTokenTouch:(id)sender {
+- (void)refreshDevices {
+    if (!devices_) {
+        devices_ = [[NSMutableArray alloc] init];
+    }
+    [devices_ removeAllObjects];
+    NSArray* discovered = [[NabtoClient instance] nabtoGetLocalDevices];
+    if ([discovered count] == 0) {
+        NSLog(@"No devices found!");
+    } else {
+        for (NSString *name in discovered) {
+            NSLog(@"Got local device [%@]", name);
+            [devices_ addObject:name];
+        }
+    }
+    [self.deviceTable reloadData];
+}
+
+- (IBAction)handleRefresh:(id)sender {
   // [START get_iid_token]
   NSString *token = [[FIRInstanceID instanceID] token];
   NSLog(@"InstanceID token: %@", token);
+    [self refreshDevices];
+    
   // [END get_iid_token]
 }
-
-- (IBAction)handleDiscover:(id)sender {
-    // [START get_iid_token]
-    NSString *token = [[FIRInstanceID instanceID] token];
-    NSLog(@"InstanceID token: %@", token);
-    // [END get_iid_token]
-}
-
 
 - (IBAction)handleSubscribeTouch:(id)sender {
   // [START subscribe_topic]
