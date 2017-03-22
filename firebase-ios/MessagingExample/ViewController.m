@@ -1,5 +1,7 @@
 //
-//  Copyright (c) 2016 Google Inc.
+// Original source by Google, updated by Nabto to work with Nabto Push.
+//
+// Copyright (c) 2016 Google Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -25,12 +27,24 @@
     NSMutableArray* devices_;
 }
 
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     [[NabtoClient instance] nabtoStartup];
     [[NabtoClient instance] nabtoOpenSessionGuest];
     [self prepareRpcInterface];
+    [self refreshDevices];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(receiveRefreshNotification:)
+                                                 name:@"AppActivatedNotification"
+                                               object:nil];
+}
+
+- (void) dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void) receiveRefreshNotification:(NSNotification *) notification {
     [self refreshDevices];
 }
 
@@ -109,7 +123,9 @@
                                                        style:UIAlertActionStyleDefault
                                                      handler:^(UIAlertAction *action){}];
     [alert addAction:okAction];
-    [self presentViewController:alert animated:YES completion:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self presentViewController:alert animated:YES completion:nil];
+    });
 }
 
 - (void)refreshDevices {
@@ -130,12 +146,7 @@
 }
 
 - (IBAction)handleRefresh:(id)sender {
-  // [START get_iid_token]
-  NSString *token = [[FIRInstanceID instanceID] token];
-  NSLog(@"InstanceID token: %@", token);
-    [self refreshDevices];
-    
-  // [END get_iid_token]
+  [self refreshDevices];
 }
 
 @end

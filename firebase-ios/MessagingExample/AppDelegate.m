@@ -229,6 +229,8 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 // [START connect_on_active]
 - (void)applicationDidBecomeActive:(UIApplication *)application {
   [self connectToFcm];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"AppActivatedNotification"
+                                                      object:self];
 }
 // [END connect_on_active]
 
