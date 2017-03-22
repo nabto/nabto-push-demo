@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
     char buf[5];
     while (true) {
         tv.tv_sec = 0;
-        tv.tv_usec = 500000;
+        tv.tv_usec = 10000;
         unabto_tick();
         FD_ZERO(&fds);
         FD_SET(STDIN, &fds); 
