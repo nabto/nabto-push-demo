@@ -19,6 +19,9 @@ android {
     }
     productFlavors {
     }
+    sourceSets{
+        main.res.srcDirs +='src/main/../../../../common/'
+    }
 }
 
 dependencies {

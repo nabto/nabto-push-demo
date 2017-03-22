@@ -8,6 +8,7 @@
 struct pushSubscriber {
     char staticData[STATIC_DATA_BUFFER_LENGTH];
     uint8_t fingerprint[NP_TRUNCATED_SHA256_LENGTH_BYTES];
+    uint8_t id;
     uint16_t pnsid;
 };
 
