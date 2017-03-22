@@ -22,7 +22,7 @@
             <parameter name="pnsid" type="uint16"/>
         </request>
         <response format="json">
-            <parameter name="id" type="uint8"/>
+            <parameter name="id" type="uint16"/>
             <parameter name="status" type="uint8"/>
         </response>
     </query>
@@ -39,7 +39,7 @@
     <!-- Unsubscribe to push notifications -->
     <query name="push_unsubscribe_id.json" id="20030">
         <request>
-            <parameter name="id" type="uint8"/>
+            <parameter name="id" type="uint16"/>
         </request>
         <response format="json">
             <parameter name="status" type="uint8"/>
@@ -58,7 +58,7 @@
      <!-- Ask if subscribed to push notifications -->
     <query name="is_subscribed_id.json" id="20050">
         <request>
-            <parameter name="id" type="uint8"/>
+            <parameter name="id" type="uint16"/>
         </request>
         <response format="json">
             <parameter name="status" type="uint8"/>

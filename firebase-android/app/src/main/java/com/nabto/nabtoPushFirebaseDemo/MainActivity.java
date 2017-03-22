@@ -30,6 +30,32 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
 
     @Override
+    protected void onResume(){
+        super.onResume();
+        nabto = new NabtoApi(new NabtoAndroidAssetManager(this));
+        nabto.startup();
+        String clientName = getResources().getString(R.string.clientName);
+        String clientPass = getResources().getString(R.string.clientPass);
+        session = nabto.openSession(clientName, clientPass);
+        if (session.getStatus() != NabtoStatus.OK) {
+            nabto.createSelfSignedProfile(clientName, clientPass);
+            nabto.openSession(clientName, clientPass);
+            if (session.getStatus() != NabtoStatus.OK) {
+                Log.e("nabtoSession", "Unable to open Nabto session");
+            }
+        }
+        String str;
+        InputStream is = getResources().openRawResource(R.raw.queries);
+        str = getStringFromInputStream(is);
+
+        Log.d("onCreate", "xml: " + str);
+        RpcResult res = nabto.rpcSetDefaultInterface(str, session);
+        if (res.getStatus() != NabtoStatus.OK) {
+            Log.e("onCreate", "rpcSetDefaultInterface failed with: " + res.getJson());
+        }
+
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
