@@ -1,5 +1,6 @@
-# uNabto device stub
-Device made to show how to use push notifications with Nabto.
+# uNabto Device Stub for Push Demo
+
+Device made to show how to use push notifications with Nabto. Remember to clone recursively to also get the uNabto submodule. If you forget, you can run `git submodule update --init` in the device subdir.
 
 ## Usage:
 
@@ -10,7 +11,7 @@ cmake ../
 make -j
 ./push_device_stub -d DEVICE_ID -k ENCRYPTION_KEY
 ```
-When the device stub is running, pres enter to trigger a push notification. This will send a push notification to all subscribed clients. Clients should subscribe as shown in the mobile apps on this repository.
+When the device stub is running, press enter to trigger a push notification. This will send a push notification to all subscribed clients. Clients should subscribe as shown in the mobile apps on this repository.
 
 ## Implementation details
 
