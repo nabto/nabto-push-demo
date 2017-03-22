@@ -29,9 +29,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [[NabtoClient instance] nabtoStartup];
-    [[NabtoClient instance] nabtoOpenSessionGuest];
-    [self prepareRpcInterface];
     [self refreshDevices];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(receiveRefreshNotification:)
@@ -76,27 +73,6 @@
     if (status == NABTO_OK) {
         [self showAlert:@"Device successfully subscribed to notifications! Now suspend app and issue notification (just tap enter in demo device app)"];
         NSLog(@"Subscribed ok via url [%@]:\n %s", url, jsonResponse);
-    }
-}
-
-- (void)prepareRpcInterface {
-    char* errorMsg;
-    NSString* path = [[NSBundle mainBundle] pathForResource:@"queries" ofType:@"xml"];
-    if (!path) {
-        [self showAlert:@"Invalid path to interface definition"];
-        return;
-    }
-    NSString* xml = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
-    if (!xml) {
-        [self showAlert:@"Could not read interface definition"];
-        return;
-    }
-    if ([[NabtoClient instance] nabtoRpcSetDefaultInterface:xml withErrorMessage:&errorMsg] == NABTO_OK) {
-        NSLog(@"Successfully read RPC interface definition");
-    } else {
-        [self showAlert:[NSString stringWithFormat:
-                         @"Could not read RPC interface definition file: %s", errorMsg]];
-        [[NabtoClient instance] nabtoFree:errorMsg];
     }
 }
 

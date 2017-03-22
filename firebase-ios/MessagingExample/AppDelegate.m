@@ -1,4 +1,6 @@
 //
+//  Original source by Google, updated by Nabto to work with Nabto Push.
+//
 //  Copyright (c) 2016 Google Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +17,7 @@
 //
 
 #import "AppDelegate.h"
+#import "NabtoClient/NabtoClient.h"
 
 #if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 @import UserNotifications;
@@ -83,6 +86,7 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
     }
 
     [[UIApplication sharedApplication] registerForRemoteNotifications];
+      
     // [END register_for_notifications]
   }
 
@@ -229,6 +233,13 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 // [START connect_on_active]
 - (void)applicationDidBecomeActive:(UIApplication *)application {
   [self connectToFcm];
+    
+  // initialize Nabto
+  [[NabtoClient instance] nabtoStartup];
+  [[NabtoClient instance] nabtoOpenSessionGuest];
+  [self prepareRpcInterface];
+    
+  // update list of local devices
   [[NSNotificationCenter defaultCenter] postNotificationName:@"AppActivatedNotification"
                                                       object:self];
 }
@@ -238,7 +249,30 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 - (void)applicationDidEnterBackground:(UIApplication *)application {
   [[FIRMessaging messaging] disconnect];
   NSLog(@"Disconnected from FCM");
+  [[NabtoClient instance] nabtoCloseSession];
+  [[NabtoClient instance] nabtoShutdown];
 }
 // [END disconnect_from_fcm]
+
+- (void)prepareRpcInterface {
+    char* errorMsg;
+    NSString* path = [[NSBundle mainBundle] pathForResource:@"queries" ofType:@"xml"];
+    if (!path) {
+        NSLog(@"Invalid path to interface definition");
+        return;
+    }
+    NSString* xml = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
+    if (!xml) {
+        NSLog(@"Could not read interface definition");
+        return;
+    }
+    if ([[NabtoClient instance] nabtoRpcSetDefaultInterface:xml withErrorMessage:&errorMsg] == NABTO_OK) {
+        NSLog(@"Successfully read RPC interface definition");
+    } else {
+        NSLog(@"Could not read RPC interface definition file: %s", errorMsg);
+        [[NabtoClient instance] nabtoFree:errorMsg];
+    }
+}
+
 
 @end
