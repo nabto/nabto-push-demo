@@ -20,6 +20,7 @@ enum fp_acl_response_status {
 };
 struct pushSubscriber subs_[MAX_SUBSCRIBERS];
 int numSubs_ = 0;
+uint16_t nextId_ = 1;
 
 int testContext = 394;
 uint8_t dynData[MAX_DYNAMIC_DATA_LENGTH];
@@ -168,10 +169,11 @@ application_event_result application_event(application_request* request,
     // client - for the default demo, see
     // https://github.com/nabto/nabto-push-demo/blob/master/NabtoPushFirebaseDemo/app/src/main/res/raw/queries.xml
     application_event_result res;
-    
+    uint16_t id;
+
     switch (request->queryId) {
     case 20000: 
-        // push_subscribe.json
+        // push_subscribe_cert_fp.json
         // check if device is know, if so update the static information and PNS ID
         for(int i = 0; i < numSubs_; i++){
             if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
@@ -183,7 +185,9 @@ application_event_result application_event(application_request* request,
                 if (!unabto_query_read_uint16(query_request, &subs_[i].pnsid)){
                     return AER_REQ_TOO_SMALL;
                 }
+                subs_[i].id = nextId_;
                 if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+                nextId_++;
                 updatePersistanceFile();
                 return AER_REQ_RESPONSE_READY;
             }
@@ -197,16 +201,60 @@ application_event_result application_event(application_request* request,
         if (!unabto_query_read_uint16(query_request, &subs_[numSubs_].pnsid)){
             return AER_REQ_TOO_SMALL;
         }
+        subs_[numSubs_].id = nextId_;
+        // fingerprint based subscription does not return ID
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
         numSubs_++;
+        nextId_++;
+        NABTO_LOG_INFO(("numSubs_ is now %i, Just added client with static data: %s",numSubs_,subs_[numSubs_-1].staticData));
+        // The persistance file is updated with the new subscription information
+        updatePersistanceFile();
+        return AER_REQ_RESPONSE_READY;
+        
+    case 20010: 
+        // push_subscribe_id.json
+        // check if device is know, if so update the static information and PNS ID
+        for(int i = 0; i < numSubs_; i++){
+            if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
+                // Client known, updating static data
+                NABTO_LOG_INFO(("updating static data for know device"));
+                if (!read_string_null_terminated(query_request, subs_[i].staticData, STATIC_DATA_BUFFER_LENGTH )){
+                    return AER_REQ_TOO_SMALL;
+                }
+                if (!unabto_query_read_uint16(query_request, &subs_[i].pnsid)){
+                    return AER_REQ_TOO_SMALL;
+                }
+                subs_[i].id = nextId_;
+                if (!unabto_query_write_uint16(query_response, nextId_)) return AER_REQ_RSP_TOO_LARGE;
+                if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+                nextId_++;
+                updatePersistanceFile();
+                return AER_REQ_RESPONSE_READY;
+            }
+        }
+        // If the device is not found, its fingerprint is stored along with the static data and PNS ID 
+        NABTO_LOG_INFO(("New device found adding to subs_"));
+        memcpy(subs_[numSubs_].fingerprint, request->connection->fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES);
+        if (!read_string_null_terminated(query_request, subs_[numSubs_].staticData, STATIC_DATA_BUFFER_LENGTH )){
+            return AER_REQ_TOO_SMALL;
+        }
+        if (!unabto_query_read_uint16(query_request, &subs_[numSubs_].pnsid)){
+            return AER_REQ_TOO_SMALL;
+        }
+        subs_[numSubs_].id = nextId_;
+        // return the ID to be used of unsubscribe request
+        if (!unabto_query_write_uint16(query_response, nextId_)) return AER_REQ_RSP_TOO_LARGE;
+        if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+        numSubs_++;
+        nextId_++;
         NABTO_LOG_INFO(("numSubs_ is now %i, Just added client with static data: %s",numSubs_,subs_[numSubs_-1].staticData));
         // The persistance file is updated with the new subscription information
         updatePersistanceFile();
         return AER_REQ_RESPONSE_READY;
 
-    case 20010:
-        // push_unsubscribe.json
-        // Find the device, remove it from the subscription list, and update the persistance file
+    case 20020:
+        // push_unsubscribe_cert_fp.json
+        // Find the device based on fingerprint, remove it from the subscription list, and update the persistance file
         for(int i = 0; i < numSubs_; i++){
             if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
                 // Client known, updating static data
@@ -221,11 +269,48 @@ application_event_result application_event(application_request* request,
         if (!unabto_query_write_uint8(query_response, PUSH_STATUS_REMOVE_FAILED)) return AER_REQ_RSP_TOO_LARGE;
         updatePersistanceFile();
         return AER_REQ_RESPONSE_READY;
-    case 20020:
-        // is_subscribed.json
-        // Determine if the device exists in the subscription list
+    case 20030:
+        // push_unsubscribe_id.json
+        // Find the device based on id, remove it from the subscription list, and update the persistance file
+        if (!unabto_query_read_uint16(query_request, &id)){
+            return AER_REQ_TOO_SMALL;
+        }
+               
+        for(int i = 0; i < numSubs_; i++){
+            if(subs_[i].id == id){
+                // Client known, updating static data
+                memmove(&subs_[i],&subs_[i+1],sizeof(struct pushSubscriber)*(numSubs_-i-1));
+                numSubs_--;
+                if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+                updatePersistanceFile();
+                return AER_REQ_RESPONSE_READY;
+            }
+        }
+        // if device cannot be found return an error
+        if (!unabto_query_write_uint8(query_response, PUSH_STATUS_REMOVE_FAILED)) return AER_REQ_RSP_TOO_LARGE;
+        updatePersistanceFile();
+        return AER_REQ_RESPONSE_READY;
+    case 20040:
+        // is_subscribed_cert_fp.json
+        // Determine if the device exists in the subscription list based on fingerprint
         for(int i = 0; i < numSubs_; i++){
             if(memcmp(request->connection->fingerprint, subs_[i].fingerprint, NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
+                // Client subscribed, returning OK
+                if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
+                return AER_REQ_RESPONSE_READY;
+            }
+        }
+        // Client not subscribed returning FAILED
+        if (!unabto_query_write_uint8(query_response, PUSH_STATUS_FAILED)) return AER_REQ_RSP_TOO_LARGE;
+        return AER_REQ_RESPONSE_READY;
+    case 20050:
+        // is_subscribed_id.json
+        // Determine if the device exists in the subscription list based on id
+        if (!unabto_query_read_uint16(query_request, &id)){
+            return AER_REQ_TOO_SMALL;
+        }
+        for(int i = 0; i < numSubs_; i++){
+            if(subs_[i].id == id){
                 // Client subscribed, returning OK
                 if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
                 return AER_REQ_RESPONSE_READY;
