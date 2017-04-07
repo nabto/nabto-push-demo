@@ -3,6 +3,7 @@
 
 //#define NABTO_ENABLE_CONNECTION_ESTABLISHMENT_ACL_CHECK 1
 
+#define NABTO_ENABLE_PUSH                           1
 #define NABTO_ENABLE_STREAM                         0
 #define NABTO_CONNECTIONS_SIZE                      500
 #define NABTO_ENABLE_UCRYPTO                        1
