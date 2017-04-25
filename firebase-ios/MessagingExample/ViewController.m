@@ -68,11 +68,17 @@
     NSLog(@"Tapped device [%@]", device);
     char* jsonResponse;
     
-    NSString* url = [NSString stringWithFormat:@"nabto://%@/push_subscribe.json?staticData=%@&pnsid=1", device, [self createPushConfig]];
+    NSString* url = [NSString stringWithFormat:@"nabto://%@/push_subscribe_id.json?staticData=%@&pnsid=1", device, [self createPushConfig]];
     nabto_status_t status = [[NabtoClient instance] nabtoRpcInvoke:url withResultBuffer:&jsonResponse];
     if (status == NABTO_OK) {
         [self showAlert:@"Device successfully subscribed to notifications! Now suspend app and issue notification (just tap enter in demo device app)"];
         NSLog(@"Subscribed ok via url [%@]:\n %s", url, jsonResponse);
+    } else {
+        if (status == NABTO_FAILED_WITH_JSON_MESSAGE) {
+            NSLog(@"Subscription failed with json response: %s", jsonResponse);
+        } else {
+            NSLog(@"Subscription failed with status %d", status);
+        }
     }
 }
 
