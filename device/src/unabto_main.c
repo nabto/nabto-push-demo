@@ -34,7 +34,7 @@ static void help(const char* errmsg, const char *progname)
     printf("\nPush notification demo stub application to how to use push notifications.\n");
     printf("Obtain a device id and crypto key from www.appmyproduct.com\n\n");
 
-    printf("Usage: %s -d <device id> -k <crypto key> [-N <demo display name>] [-P <product name>] [-I <icon url>] [-p <local/discovery port>]\n\n", progname);
+    printf("Usage: %s -d <device id> -k <crypto key> [-p <local/discovery port>]\n\n", progname);
 }
 
 
