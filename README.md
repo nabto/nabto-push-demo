@@ -12,4 +12,4 @@ Clone this repository with the recursive argument:
 ```
 git clone --recursive https://github.com/nabto/nabto-push-demo.git
 ```
-This will clone the unabto submodule into the repository, for now, you must manually switch the branch of this submodule to Nabto-1400 to get the push features.
+This will clone the unabto submodule into the repository.
