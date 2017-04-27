@@ -100,18 +100,12 @@ bool parse_argv(int argc, char* argv[], struct configuration* config) {
     const char x1s[] = "d";      const char* x1l[] = { "deviceid", 0 };
     const char x2s[] = "k";      const char* x2l[] = { "presharedkey", 0 };
     const char x3s[] = "p";      const char* x3l[] = { "localport", 0 };
-    const char x4s[] = "N";      const char* x4l[] = { "devicename", 0 };
-    const char x5s[] = "P";      const char* x5l[] = { "productname", 0 };
-    const char x6s[] = "I";      const char* x6l[] = { "iconurl", 0 };
 
     const struct { int k; int f; const char *s; const char*const* l; } opts[] = {
         { 'h', 0,           x0s, x0l },
         { 'd', GOPT_ARG,    x1s, x1l },
         { 'k', GOPT_ARG,    x2s, x2l },
         { 'p', GOPT_ARG,    x3s, x3l },
-        { 'N', GOPT_ARG,    x4s, x4l },
-        { 'P', GOPT_ARG,    x5s, x5l },
-        { 'I', GOPT_ARG,    x6s, x6l },
         { 0, 0, 0, 0 }
     };
     void *options = gopt_sort( & argc, (const char**)argv, opts);
@@ -130,9 +124,6 @@ bool parse_argv(int argc, char* argv[], struct configuration* config) {
     }
 
     gopt_arg(options, 'p', &config->local_port_str);
-    gopt_arg(options, 'N', &config->device_name);
-    gopt_arg(options, 'P', &config->product_name);
-    gopt_arg(options, 'I', &config->icon_url);
 
     return true;
 }

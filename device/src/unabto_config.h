@@ -9,7 +9,7 @@
 #define NABTO_ENABLE_UCRYPTO                        1
 
 #define NABTO_ENABLE_LOGGING                        1
-#define NABTO_LOG_ALL                               1
+//#define NABTO_LOG_ALL                               1
 #define NABTO_RESPONSE_MAX_SIZE                     1000
     
 #endif
