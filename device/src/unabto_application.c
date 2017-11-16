@@ -5,7 +5,7 @@
 #include "unabto/unabto_app.h"
 #include "unabto/unabto_util.h"
 #include "unabto/unabto_protocol_defines.h"
-#include <modules/stateful_push_service/stateful_push_service.h>
+#include <modules/push_service/push_service.h>
 #include <stdio.h>
 
 #define PERSISTANCE_FILENAME "persistence.bin"
@@ -152,7 +152,7 @@ void sendPN(void){
             NABTO_LOG_ERROR(("add_body_loc_string_arg failed"));
             return ;
         }
-        // The constructed push notification is sent to the stateful_push_service module
+        // The constructed push notification is sent to the push_service module
         // Additionally, the callback function to be called when the core has finished handling the notification is passed.
         // The context for the callback function is passed as a void pointer, for this example it is simply an integer.
         send_push_message(&pm,&callback, (void*)&testContext);
