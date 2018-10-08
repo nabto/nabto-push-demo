@@ -21,6 +21,7 @@ enum fp_acl_response_status {
 struct pushSubscriber subs_[MAX_SUBSCRIBERS];
 int numSubs_ = 0;
 uint16_t nextId_ = 1;
+uint32_t CNT = 0;
 
 int testContext = 394;
 uint8_t dynData[MAX_DYNAMIC_DATA_LENGTH];
@@ -127,6 +128,7 @@ void sendPN(void){
     // For loop constructing a push notification for each subscribed clients
     for(i = 0; i<numSubs_; i++){
         push_message pm;
+        char str[10];
         // Initialize the push notification with the pnsid and static data provided by the client device on subscription
         if(!init_push_message(&pm, subs_[i].pnsid,subs_[i].staticData)){
             NABTO_LOG_ERROR(("init_push_message failed"));
@@ -148,7 +150,9 @@ void sendPN(void){
         // in this example, the body localization key requires an argument which is added here.
         // this function can be called several times if multiple arguments are needed.
         // for now only string arguments are supported.
-        if(!add_body_loc_string_arg(&pm, "943")){
+        CNT++;
+        sprintf(str, "%d", CNT);
+        if(!add_body_loc_string_arg(&pm, str)){
             NABTO_LOG_ERROR(("add_body_loc_string_arg failed"));
             return ;
         }
@@ -176,7 +180,7 @@ application_event_result application_event(application_request* request,
         // push_subscribe_cert_fp.json
         // check if device is know, if so update the static information and PNS ID
         for(int i = 0; i < numSubs_; i++){
-            if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
+            if(memcmp(request->connection->fingerprint.value.data,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
                 // Client known, updating static data
                 NABTO_LOG_INFO(("updating static data for know device"));
                 if (!read_string_null_terminated(query_request, subs_[i].staticData, STATIC_DATA_BUFFER_LENGTH )){
@@ -194,7 +198,7 @@ application_event_result application_event(application_request* request,
         }
         // If the device is not found, its fingerprint is stored along with the static data and PNS ID 
         NABTO_LOG_INFO(("New device found adding to subs_"));
-        memcpy(subs_[numSubs_].fingerprint, request->connection->fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES);
+        memcpy(subs_[numSubs_].fingerprint, request->connection->fingerprint.value.data,NP_TRUNCATED_SHA256_LENGTH_BYTES);
         if (!read_string_null_terminated(query_request, subs_[numSubs_].staticData, STATIC_DATA_BUFFER_LENGTH )){
             return AER_REQ_TOO_SMALL;
         }
@@ -215,7 +219,7 @@ application_event_result application_event(application_request* request,
         // push_subscribe_id.json
         // check if device is know, if so update the static information and PNS ID
         for(int i = 0; i < numSubs_; i++){
-            if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
+            if(memcmp(request->connection->fingerprint.value.data,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
                 // Client known, updating static data
                 NABTO_LOG_INFO(("updating static data for know device"));
                 if (!read_string_null_terminated(query_request, subs_[i].staticData, STATIC_DATA_BUFFER_LENGTH )){
@@ -234,7 +238,7 @@ application_event_result application_event(application_request* request,
         }
         // If the device is not found, its fingerprint is stored along with the static data and PNS ID 
         NABTO_LOG_INFO(("New device found adding to subs_"));
-        memcpy(subs_[numSubs_].fingerprint, request->connection->fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES);
+        memcpy(subs_[numSubs_].fingerprint, request->connection->fingerprint.value.data,NP_TRUNCATED_SHA256_LENGTH_BYTES);
         if (!read_string_null_terminated(query_request, subs_[numSubs_].staticData, STATIC_DATA_BUFFER_LENGTH )){
             return AER_REQ_TOO_SMALL;
         }
@@ -256,7 +260,7 @@ application_event_result application_event(application_request* request,
         // push_unsubscribe_cert_fp.json
         // Find the device based on fingerprint, remove it from the subscription list, and update the persistance file
         for(int i = 0; i < numSubs_; i++){
-            if(memcmp(request->connection->fingerprint,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
+            if(memcmp(request->connection->fingerprint.value.data,subs_[i].fingerprint,NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
                 // Client known, updating static data
                 memmove(&subs_[i],&subs_[i+1],sizeof(struct pushSubscriber)*(numSubs_-i-1));
                 numSubs_--;
@@ -294,7 +298,7 @@ application_event_result application_event(application_request* request,
         // is_subscribed_cert_fp.json
         // Determine if the device exists in the subscription list based on fingerprint
         for(int i = 0; i < numSubs_; i++){
-            if(memcmp(request->connection->fingerprint, subs_[i].fingerprint, NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
+            if(memcmp(request->connection->fingerprint.value.data, subs_[i].fingerprint, NP_TRUNCATED_SHA256_LENGTH_BYTES)==0){
                 // Client subscribed, returning OK
                 if (!unabto_query_write_uint8(query_response, PUSH_STATUS_OK)) return AER_REQ_RSP_TOO_LARGE;
                 return AER_REQ_RESPONSE_READY;
